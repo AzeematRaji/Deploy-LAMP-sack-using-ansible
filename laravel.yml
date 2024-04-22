@@ -1,0 +1,27 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: deploy LAMP stack with bashscript
+      script: /home/vagrant/laravel.sh 
+
+    - name: verify PHP application accessibility
+      uri:
+        url: http://{{ ansible_host }}/index.php
+        return_content: yes
+      register: webpage
+      failed_when: "'Laravel' not in webpage.content"
+
+    - name: create Cron job to check server uptime every 12am midnight
+      cron:
+        name: "check server uptime"
+        minute: "0"
+        hour: "0"
+        job: "uptime >> /home/vagrant/server_uptime.log"
+
+  vars:
+    ansible_host: 192.168.33.8
+
+
+      
